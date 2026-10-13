@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Zajęcia i obecność</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #eceff6;
+        --surface: #ffffff;
+        --ink: #1a2240;
+        --muted: #6b7392;
+        --line: #d9deec;
+        --present: #1d8a5a;
+        --present-bg: #dff3e9;
+        --absent: #c4372c;
+        --absent-bg: #fbe3e0;
+        --cancel: #7b8196;
+        --cancel-bg: #e8eaf1;
+        --accent: #2c3fa8;
+        --accent-bg: #e3e7fa;
+        --warn: #a95f00;
+        --warn-bg: #fff0d6;
+        --warn-line: #e9b45c;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #10152b;
+          --surface: #192040;
+          --ink: #e8ebfa;
+          --muted: #98a0c4;
+          --line: #2a3358;
+          --present: #4fd39a;
+          --present-bg: #173a31;
+          --absent: #ff7d70;
+          --absent-bg: #432026;
+          --cancel: #9aa1bd;
+          --cancel-bg: #262d4d;
+          --accent: #8fa0ff;
+          --accent-bg: #232c5a;
+          --warn: #ffb454;
+          --warn-bg: #4a3412;
+          --warn-line: #8a6422;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #10152b;
+        --surface: #192040;
+        --ink: #e8ebfa;
+        --muted: #98a0c4;
+        --line: #2a3358;
+        --present: #4fd39a;
+        --present-bg: #173a31;
+        --absent: #ff7d70;
+        --absent-bg: #432026;
+        --cancel: #9aa1bd;
+        --cancel-bg: #262d4d;
+        --accent: #8fa0ff;
+        --accent-bg: #232c5a;
+        --warn: #ffb454;
+        --warn-bg: #4a3412;
+        --warn-line: #8a6422;
+        color-scheme: dark;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Onest",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.45;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 16px 16px 40px;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 4px 0 2px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .sync {
+        font-size: 12.5px;
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 16px;
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 5;
+      }
+      .tabs button {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-weight: 600;
+        padding: 9px 6px;
+        border-radius: 9px;
+        cursor: pointer;
+      }
+      .tabs button[aria-selected="true"] {
+        background: var(--accent);
+        color: #fff;
+      }
+      .tabs button:focus-visible,
+      .btn:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible,
+      .chip:focus-visible,
+      .icon:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .datebar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      input,
+      select {
+        font: inherit;
+        color: var(--ink);
+      }
+      .datebar input {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 10px;
+      }
+      .icon {
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 10px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .today-btn {
+        padding: 0 12px;
+        width: auto;
+        font: inherit;
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .dayname {
+        font-size: 15px;
+        color: var(--muted);
+        margin: 2px 2px 14px;
+      }
+      .todo {
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+      }
+      .todo b {
+        color: var(--warn);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .chip {
+        font: inherit;
+        font-size: 13.5px;
+        font-weight: 600;
+        border: 1px solid var(--warn-line);
+        background: var(--surface);
+        color: var(--warn);
+        border-radius: 999px;
+        padding: 4px 11px;
+        cursor: pointer;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 4px 14px;
+        border-left-width: 6px;
+      }
+      .card[data-s="p"] {
+        border-left-color: var(--present);
+      }
+      .card[data-s="a"] {
+        border-left-color: var(--absent);
+      }
+      .card[data-s="c"] {
+        border-left-color: var(--cancel);
+      }
+      .card[data-s="u"] {
+        border-left-color: var(--warn-line);
+      }
+      .time {
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 1.2;
+      }
+      .time small {
+        display: block;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .title {
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-top: 2px;
+      }
+      .room {
+        display: inline-block;
+        background: var(--accent-bg);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 1px 8px;
+        border-radius: 6px;
+        margin-right: 6px;
+      }
+      .actions {
+        grid-column: 1/-1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .btn {
+        font: inherit;
+        font-weight: 600;
+        font-size: 14.5px;
+        padding: 10px 4px;
+        border-radius: 10px;
+        border: 1.5px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .btn.p.on {
+        background: var(--present-bg);
+        border-color: var(--present);
+        color: var(--present);
+      }
+      .btn.a.on {
+        background: var(--absent-bg);
+        border-color: var(--absent);
+        color: var(--absent);
+      }
+      .btn.c.on {
+        background: var(--cancel-bg);
+        border-color: var(--cancel);
+        color: var(--cancel);
+      }
+      .skipped {
+        grid-column: 1/-1;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .skipped .unm {
+        color: var(--warn);
+        font-weight: 600;
+      }
+      .empty {
+        background: var(--surface);
+        border: 1px dashed var(--line);
+        border-radius: 14px;
+        padding: 28px 16px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .dayhead {
+        font-weight: 700;
+        font-size: 15px;
+        margin: 18px 2px 8px;
+      }
+      .row {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        display: grid;
+        grid-template-columns: 58px 1fr auto;
+        gap: 10px;
+        align-items: center;
+      }
+      .row .t {
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .row .n {
+        font-size: 14.5px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .tally {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 26px;
+        justify-content: flex-end;
+      }
+      .tg {
+        position: relative;
+        display: inline-flex;
+        gap: 3px;
+        align-items: flex-end;
+        height: 22px;
+      }
+      .tg i {
+        display: block;
+        width: 2.5px;
+        height: 22px;
+        background: var(--absent);
+        border-radius: 2px;
+      }
+      .tg.five::after {
+        content: "";
+        position: absolute;
+        left: -3px;
+        right: -3px;
+        top: 10px;
+        height: 2.5px;
+        background: var(--absent);
+        border-radius: 2px;
+        transform: rotate(-24deg);
+      }
+      .tg.five {
+        padding: 0 3px;
+      }
+      .zero {
+        color: var(--present);
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .unk {
+        color: var(--warn);
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .num {
+        font-weight: 700;
+        color: var(--absent);
+        font-size: 15px;
+        text-align: right;
+      }
+      .sum {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .sum div {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+      }
+      .sum b {
+        display: block;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+      .sum span {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .stat {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 8px;
+      }
+      .stat .top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .stat .nm {
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .stat .nm small {
+        display: block;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 13px;
+      }
+      .bar {
+        height: 8px;
+        background: var(--absent-bg);
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 10px 0 4px;
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+        background: var(--present);
+        border-radius: 6px;
+      }
+      .bar.none {
+        background: var(--cancel-bg);
+      }
+      .nums {
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .lim {
+        font-size: 13.5px;
+        margin-top: 8px;
+        font-weight: 600;
+      }
+      .lim.ok {
+        color: var(--present);
+      }
+      .lim.warn {
+        color: var(--warn);
+      }
+      .lim.bad {
+        color: var(--absent);
+      }
+      .lim small {
+        display: block;
+        font-weight: 500;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .unm-box {
+        margin-top: 8px;
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-line);
+        border-radius: 10px;
+        padding: 7px 10px;
+        font-size: 13.5px;
+        color: var(--warn);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+      }
+      .unm-box button {
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid var(--warn-line);
+        background: var(--surface);
+        color: var(--warn);
+        border-radius: 8px;
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+      .over {
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .over input {
+        width: 84px;
+        padding: 5px 8px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        border-radius: 8px;
+      }
+      details {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+      }
+      summary {
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 14.5px;
+      }
+      .field input,
+      .field select {
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        border-radius: 8px;
+        max-width: 190px;
+      }
+      .field input[type="number"] {
+        width: 90px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 110px;
+        margin: 10px 0;
+        font:
+          12.5px ui-monospace,
+          Menlo,
+          Consolas,
+          monospace;
+        padding: 8px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--ink);
+        border-radius: 8px;
+      }
+      .line {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .line .btn {
+        padding: 9px 14px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 8px 0 0;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .card,
+        .btn {
+          transition:
+            background 0.15s,
+            border-color 0.15s;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Zajęcia i obecność</h1>
+      <p class="sync" id="sync" role="status">Zapis na tym urządzeniu</p>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="day">Oznacz</button>
+        <button role="tab" aria-selected="false" data-tab="week">Plan</button>
+        <button role="tab" aria-selected="false" data-tab="stats">
+          Podsumowanie
+        </button>
+      </div>
+
+      <section id="day">
+        <div id="todo"></div>
+        <div class="datebar">
+          <button class="icon" id="prev" aria-label="Poprzedni dzień">‹</button>
+          <input type="date" id="date" aria-label="Data" />
+          <button class="icon" id="next" aria-label="Następny dzień">›</button>
+          <button class="icon today-btn" id="todayBtn">Dzisiaj</button>
+        </div>
+        <div class="dayname" id="dayname"></div>
+        <div id="dayList"></div>
+      </section>
+
+      <section id="week" hidden></section>
+
+      <section id="stats" hidden>
+        <div class="sum" id="sum"></div>
+        <details>
+          <summary>Ustawienia i limity</summary>
+          <div class="field">
+            <label for="setStart">Początek semestru</label
+            ><input type="date" id="setStart" />
+          </div>
+          <div class="field">
+            <label for="setMode">Limit liczymy jako</label>
+            <select id="setMode">
+              <option value="count">liczba nieobecności</option>
+              <option value="percent">wymagana frekwencja (%)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="setVal" id="setValLabel">Dozwolone nieobecności</label
+            ><input
+              type="number"
+              id="setVal"
+              min="0"
+              step="1"
+              inputmode="numeric"
+            />
+          </div>
+          <p class="hint">
+            Domyślnie możesz opuścić 2 zajęcia z każdego przedmiotu. Dla
+            wybranych zajęć ustawisz własny limit na ich karcie poniżej.
+          </p>
+        </details>
+        <div id="statList"></div>
+        <details>
+          <summary>Kopia zapasowa</summary>
+          <p class="hint">
+            Dane synchronizują się automatycznie, gdy otwierasz stronę
+            zalogowany w Claude. Kod poniżej to dodatkowe zabezpieczenie.
+          </p>
+          <textarea id="backup" spellcheck="false"></textarea>
+          <div class="line">
+            <button class="btn" id="copyBtn">Skopiuj</button>
+            <button class="btn" id="importBtn">Wczytaj z tekstu</button>
+            <button class="btn" id="resetBtn">Wyczyść wpisy</button>
+          </div>
+          <p class="hint" id="backupMsg" role="status"></p>
+        </details>
+      </section>
+    </div>
+
+    <script>
+      const SCHEDULE = [
+        {
+          d: 1,
+          ru: "Poniedziałek",
+          items: [
+            [
+              "WMP-206B",
+              "Aplikacje w środowisku Java",
+              "laboratorium · Grupa 3",
+              "15:50",
+              "17:30",
+            ],
+            [
+              "WMP-215",
+              "Społeczne aspekty informatyki i automatyzacji procesów",
+              "laboratorium · Grupa 3",
+              "17:30",
+              "19:10",
+            ],
+            [
+              "WMP-118",
+              "Społeczne aspekty informatyki i automatyzacji procesów",
+              "konwersatorium",
+              "19:10",
+              "20:50",
+            ],
+          ],
+        },
+        {
+          d: 2,
+          ru: "Wtorek",
+          items: [
+            [
+              "WMP-118",
+              "Systemy informacji przestrzennej GIS",
+              "konwersatorium",
+              "11:40",
+              "13:20",
+            ],
+            [
+              "WMP-221",
+              "Systemy informacji przestrzennej GIS",
+              "laboratorium · Grupa 1",
+              "13:20",
+              "15:00",
+            ],
+            [
+              "C-933",
+              "Język rosyjski – CEF B2+ – Kurs specjalistyczny",
+              "lektorat · Grupa 204",
+              "17:30",
+              "19:10",
+            ],
+          ],
+        },
+        {
+          d: 3,
+          ru: "Środa",
+          items: [
+            [
+              "WMP-117",
+              "Aplikacje w środowisku Java",
+              "wykład",
+              "10:00",
+              "11:40",
+            ],
+            [
+              "WMP-215",
+              "Metodyka przygotowania publikacji naukowej",
+              "laboratorium · Grupa 1",
+              "16:40",
+              "17:30",
+            ],
+            [
+              "WMP-604",
+              "Wprowadzenie do biznesu",
+              "warsztaty · Grupa 3",
+              "17:30",
+              "19:10",
+            ],
+          ],
+        },
+        {
+          d: 4,
+          ru: "Czwartek",
+          items: [
+            [
+              "ONLINE",
+              "Nowoczesne narzędzia informatyczne",
+              "pracownia dyplomowa",
+              "15:50",
+              "17:30",
+            ],
+            [
+              "WMP-206A",
+              "Teoria złożoności obliczeniowej",
+              "laboratorium · Grupa 2",
+              "17:30",
+              "18:20",
+            ],
+            [
+              "WMP-215",
+              "Programowanie aplikacji mobilnych",
+              "laboratorium · Grupa 2",
+              "18:20",
+              "20:00",
+            ],
+            [
+              "WMP-118",
+              "Programowanie aplikacji mobilnych",
+              "konwersatorium",
+              "20:00",
+              "21:40",
+            ],
+          ],
+        },
+        {
+          d: 5,
+          ru: "Piątek",
+          items: [
+            ["ONLINE", "Analiza danych w języku R", "wykład", "15:50", "17:30"],
+            [
+              "ONLINE",
+              "Analiza danych w języku R",
+              "laboratorium",
+              "17:30",
+              "19:10",
+            ],
+            [
+              "ONLINE",
+              "Nowoczesne narzędzia informatyczne",
+              "seminarium",
+              "19:10",
+              "20:50",
+            ],
+          ],
+        },
+      ];
+      const CLASSES = [];
+      SCHEDULE.forEach((day) =>
+        day.items.forEach((it, i) =>
+          CLASSES.push({
+            id: "d" + day.d + "-" + (i + 1),
+            day: day.d,
+            room: it[0],
+            name: it[1],
+            type: it[2],
+            from: it[3],
+            to: it[4],
+          }),
+        ),
+      );
+      const byDay = (d) => CLASSES.filter((c) => c.day === d);
+      const DAYS = [
+        "Niedziela",
+        "Poniedziałek",
+        "Wtorek",
+        "Środa",
+        "Czwartek",
+        "Piątek",
+        "Sobota",
+      ];
+      const SHORT = ["nd", "pn", "wt", "śr", "cz", "pt", "sb"];
+      const DEFAULTS = {
+        start: "2026-10-05",
+        mode: "count",
+        count: 2,
+        percent: 80,
+        over: {},
+      };
+      const LKEY = "attendance-v2";
+
+      /* ---------- state + storage ---------- */
+      let state = loadLocal();
+      function freshSettings(s) {
+        return Object.assign({}, DEFAULTS, s || {}, {
+          over: Object.assign({}, (s && s.over) || {}),
+        });
+      }
+      function loadLocal() {
+        try {
+          const raw = localStorage.getItem(LKEY);
+          if (raw) {
+            const o = JSON.parse(raw);
+            return {
+              records: o.records || {},
+              settings: freshSettings(o.settings),
+            };
+          }
+          const old = localStorage.getItem("attendance-v1");
+          if (old) {
+            return {
+              records: JSON.parse(old) || {},
+              settings: freshSettings(),
+            };
+          }
+        } catch (e) {}
+        return { records: {}, settings: freshSettings() };
+      }
+      function saveLocal() {
+        try {
+          localStorage.setItem(LKEY, JSON.stringify(state));
+        } catch (e) {}
+      }
+
+      let docRef = null,
+        saveTimer = null,
+        saving = Promise.resolve(),
+        dirty = 0;
+      function setSync(t) {
+        document.getElementById("sync").textContent = t;
+      }
+      function persist() {
+        saveLocal();
+        if (!docRef) return;
+        dirty++;
+        setSync("Zapisywanie…");
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          saving = saving
+            .then(() => docRef.set(JSON.parse(JSON.stringify(state))))
+            .then(() => {
+              dirty = Math.max(0, dirty - 1);
+              setSync(
+                "Zapisano w chmurze · synchronizuje się między urządzeniami",
+              );
+            })
+            .catch(() => {
+              dirty = Math.max(0, dirty - 1);
+              setSync(
+                "Nie udało się zapisać w chmurze. Dane są na tym urządzeniu.",
+              );
+            });
+        }, 500);
+      }
+      async function initCloud() {
+        try {
+          if (!window.claude || !claude.use) return;
+          const [db, user] = await Promise.all([
+            claude.use("db"),
+            claude.use("user"),
+          ]);
+          if (!db || !user) return;
+          const uid = await user.id();
+          if (!uid) return;
+          docRef = db.doc("data/users/" + uid + "/state");
+          setSync("Łączenie z chmurą…");
+          docRef.onSnapshot(
+            (snap) => {
+              if (dirty) return;
+              if (snap.exists) {
+                const d = snap.data() || {};
+                const incoming = {
+                  records: d.records || {},
+                  settings: freshSettings(d.settings),
+                };
+                if (JSON.stringify(incoming) !== JSON.stringify(state)) {
+                  state = incoming;
+                  saveLocal();
+                  renderAll();
+                }
+                setSync(
+                  "Zapisano w chmurze · synchronizuje się między urządzeniami",
+                );
+              } else {
+                const hasLocal =
+                  Object.keys(state.records).length ||
+                  JSON.stringify(state.settings) !==
+                    JSON.stringify(freshSettings());
+                setSync("Chmura połączona");
+                if (hasLocal) persist();
+              }
+            },
+            () => setSync("Brak synchronizacji. Dane są na tym urządzeniu."),
+          );
+        } catch (e) {
+          /* stay local */
+        }
+      }
+
+      /* ---------- helpers ---------- */
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+      const pad = (n) => String(n).padStart(2, "0");
+      const iso = (d) =>
+        d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+      const parse = (s) => {
+        const [y, m, d] = s.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      };
+      const fmt = (s) => {
+        const d = parse(s);
+        return (
+          d.getDate() + "." + pad(d.getMonth() + 1) + "." + d.getFullYear()
+        );
+      };
+      const fmtShort = (s) => {
+        const d = parse(s);
+        return (
+          SHORT[d.getDay()] + " " + d.getDate() + "." + pad(d.getMonth() + 1)
+        );
+      };
+      const toMin = (t) => {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+      };
+      let current = iso(new Date());
+      let activeTab = "day";
+
+      function isPast(c, di) {
+        const now = new Date(),
+          t = iso(now);
+        if (di < t) return true;
+        if (di > t) return false;
+        return now.getHours() * 60 + now.getMinutes() >= toMin(c.to);
+      }
+
+      function computeAll() {
+        const out = {},
+          dates = {};
+        CLASSES.forEach(
+          (c) => (out[c.id] = { p: 0, a: 0, c: 0, u: 0, firstU: null }),
+        );
+        for (const k in state.records) {
+          const id = k.split("|")[1],
+            o = out[id];
+          if (!o) continue;
+          const v = state.records[k];
+          if (v === "p") o.p++;
+          else if (v === "a") o.a++;
+          else if (v === "c") o.c++;
+        }
+        const end = parse(iso(new Date()));
+        const d = parse(state.settings.start || DEFAULTS.start);
+        let guard = 0;
+        while (d <= end && guard++ < 800) {
+          const di = iso(d);
+          byDay(d.getDay()).forEach((c) => {
+            if (!isPast(c, di)) return;
+            if (!state.records[di + "|" + c.id]) {
+              const o = out[c.id];
+              o.u++;
+              if (!o.firstU) o.firstU = di;
+              dates[di] = (dates[di] || 0) + 1;
+            }
+          });
+          d.setDate(d.getDate() + 1);
+        }
+        return { out, dates };
+      }
+
+      function limitFor(id) {
+        const s = state.settings;
+        if (s.over[id] != null && s.over[id] !== "") return Number(s.over[id]);
+        return s.mode === "count" ? Number(s.count) : Number(s.percent);
+      }
+
+      function tallyHTML(n) {
+        let h = '<span class="tally" aria-hidden="true">',
+          left = n;
+        while (left > 0) {
+          const g = Math.min(5, left),
+            bars = g === 5 ? 4 : g;
+          h +=
+            '<span class="tg' +
+            (g === 5 ? " five" : "") +
+            '">' +
+            "<i></i>".repeat(bars) +
+            "</span>";
+          left -= g;
+        }
+        return h + "</span>";
+      }
+      function absBlock(o, compact) {
+        if (o.a) return '<div class="num">' + o.a + "</div>" + tallyHTML(o.a);
+        if (o.u)
+          return (
+            '<span class="unk">' + (compact ? "?" : "brak danych") + "</span>"
+          );
+        return (
+          '<span class="zero">' +
+          (compact ? "0" : "brak nieobecności") +
+          "</span>"
+        );
+      }
+
+      /* ---------- day tab ---------- */
+      function renderTodo(info) {
+        const ds = Object.keys(info.dates).sort().reverse();
+        const total = ds.reduce((n, k) => n + info.dates[k], 0);
+        if (!total) {
+          $("#todo").innerHTML = "";
+          return;
+        }
+        $("#todo").innerHTML =
+          '<div class="todo"><b>Do uzupełnienia: ' +
+          total +
+          "</b> " +
+          (total === 1 ? "zajęcia bez wpisu" : "zajęć bez wpisu") +
+          ". Dopóki ich nie oznaczysz, nie liczą się ani jako obecność, ani jako nieobecność." +
+          '<div class="chips">' +
+          ds
+            .slice(0, 12)
+            .map(
+              (k) =>
+                '<button class="chip" data-jump="' +
+                k +
+                '">' +
+                fmtShort(k) +
+                " · " +
+                info.dates[k] +
+                "</button>",
+            )
+            .join("") +
+          "</div></div>";
+      }
+      function renderDay() {
+        const info = computeAll();
+        renderTodo(info);
+        $("#date").value = current;
+        const d = parse(current),
+          wd = d.getDay();
+        $("#dayname").textContent =
+          DAYS[wd] +
+          ", " +
+          fmt(current) +
+          (current === iso(new Date()) ? " · dzisiaj" : "");
+        const list = byDay(wd),
+          box = $("#dayList");
+        if (!list.length) {
+          box.innerHTML =
+            '<div class="empty">W tym dniu nie ma zajęć. Wybierz inną datę.</div>';
+          return;
+        }
+        box.innerHTML = list
+          .map((c) => {
+            const v = state.records[current + "|" + c.id] || "";
+            const unmarked = !v && isPast(c, current);
+            const o = info.out[c.id];
+            const lim =
+              state.settings.over[c.id] != null &&
+              state.settings.over[c.id] !== ""
+                ? Number(state.settings.over[c.id])
+                : null;
+            const limTxt =
+              state.settings.mode === "count"
+                ? " z " + (lim != null ? lim : state.settings.count)
+                : "";
+            return (
+              '<div class="card" data-s="' +
+              (unmarked ? "u" : v) +
+              '">' +
+              '<div class="time">' +
+              c.from +
+              "<small>" +
+              c.to +
+              "</small></div>" +
+              '<div><div class="title">' +
+              esc(c.name) +
+              "</div>" +
+              '<div class="meta"><span class="room">' +
+              esc(c.room) +
+              "</span>" +
+              esc(c.type) +
+              "</div></div>" +
+              '<div class="actions">' +
+              '<button class="btn p' +
+              (v === "p" ? " on" : "") +
+              '" data-id="' +
+              c.id +
+              '" data-v="p" aria-pressed="' +
+              (v === "p") +
+              '">Obecny</button>' +
+              '<button class="btn a' +
+              (v === "a" ? " on" : "") +
+              '" data-id="' +
+              c.id +
+              '" data-v="a" aria-pressed="' +
+              (v === "a") +
+              '">Nieobecny</button>' +
+              '<button class="btn c' +
+              (v === "c" ? " on" : "") +
+              '" data-id="' +
+              c.id +
+              '" data-v="c" aria-pressed="' +
+              (v === "c") +
+              '">Odwołane</button>' +
+              "</div>" +
+              '<div class="skipped">Nieobecności na tych zajęciach: <b>' +
+              o.a +
+              limTxt +
+              "</b>" +
+              (unmarked
+                ? ' · <span class="unm">brak wpisu dla tego dnia</span>'
+                : "") +
+              (o.u && !unmarked
+                ? ' · <span class="unm">bez wpisu: ' + o.u + "</span>"
+                : "") +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+
+      /* ---------- week tab ---------- */
+      function renderWeek() {
+        const info = computeAll();
+        $("#week").innerHTML = SCHEDULE.map(
+          (day) =>
+            '<div class="dayhead">' +
+            day.ru +
+            "</div>" +
+            day.items
+              .map((it, i) => {
+                const c = CLASSES.find(
+                    (x) => x.id === "d" + day.d + "-" + (i + 1),
+                  ),
+                  o = info.out[c.id];
+                return (
+                  '<div class="row">' +
+                  '<div class="t">' +
+                  c.from +
+                  "<br>" +
+                  c.to +
+                  "</div>" +
+                  '<div><div class="n">' +
+                  esc(c.name) +
+                  "</div>" +
+                  '<div class="meta"><span class="room">' +
+                  esc(c.room) +
+                  "</span>" +
+                  esc(c.type) +
+                  "</div></div>" +
+                  '<div style="text-align:right">' +
+                  absBlock(o, true) +
+                  (o.u && o.a ? '<div class="unk">+' + o.u + " ?</div>" : "") +
+                  "</div>" +
+                  "</div>"
+                );
+              })
+              .join(""),
+        ).join("");
+      }
+
+      /* ---------- stats tab ---------- */
+      function limitLine(c, o) {
+        const s = state.settings,
+          lim = limitFor(c.id);
+        if (s.mode === "count") {
+          const left = lim - o.a;
+          let cls = "ok",
+            txt;
+          if (left < 0) {
+            cls = "bad";
+            txt = "Limit przekroczony o " + -left;
+          } else if (left === 0) {
+            cls = "bad";
+            txt = "Limit wyczerpany: kolejna nieobecność go przekroczy";
+          } else if (left === 1) {
+            cls = "warn";
+            txt = "Limit: " + lim + " · zostaje 1 nieobecność";
+          } else {
+            txt = "Limit: " + lim + " · zostają " + left;
+          }
+          let extra = "";
+          if (o.u) {
+            const w = lim - o.a - o.u;
+            extra =
+              "<small>Gdyby wszystkie " +
+              o.u +
+              " bez wpisu były nieobecnościami: " +
+              (w >= 0 ? "zostałoby " + w : "przekroczenie o " + -w) +
+              "</small>";
+          }
+          return '<div class="lim ' + cls + '">' + txt + extra + "</div>";
+        }
+        const marked = o.p + o.a;
+        if (!marked)
+          return (
+            '<div class="lim">Wymagane: ' +
+            lim +
+            "% frekwencji · brak wpisów</div>"
+          );
+        const pct = Math.round((o.p / marked) * 100);
+        const cls = pct >= lim ? (pct - lim < 5 ? "warn" : "ok") : "bad";
+        let extra = "";
+        if (o.u) {
+          const w = Math.round((o.p / (marked + o.u)) * 100);
+          extra =
+            "<small>Gdyby wszystkie " +
+            o.u +
+            " bez wpisu były nieobecnościami: " +
+            w +
+            "%</small>";
+        }
+        return (
+          '<div class="lim ' +
+          cls +
+          '">Wymagane: ' +
+          lim +
+          "% · masz: " +
+          pct +
+          "%" +
+          extra +
+          "</div>"
+        );
+      }
+      function renderStats() {
+        const info = computeAll(),
+          s = state.settings;
+        let P = 0,
+          A = 0,
+          U = 0;
+        const rows = CLASSES.map((c) => ({ c, o: info.out[c.id] }));
+        rows.forEach((r) => {
+          P += r.o.p;
+          A += r.o.a;
+          U += r.o.u;
+        });
+        $("#sum").innerHTML =
+          '<div><b style="color:var(--present)">' +
+          P +
+          "</b><span>obecny</span></div>" +
+          '<div><b style="color:var(--absent)">' +
+          A +
+          "</b><span>nieobecny</span></div>" +
+          '<div><b style="color:var(--warn)">' +
+          U +
+          "</b><span>bez wpisu</span></div>";
+        $("#setStart").value = s.start;
+        $("#setMode").value = s.mode;
+        $("#setVal").value = s.mode === "count" ? s.count : s.percent;
+        $("#setVal").max = s.mode === "count" ? "" : "100";
+        $("#setValLabel").textContent =
+          s.mode === "count"
+            ? "Dozwolone nieobecności"
+            : "Wymagana frekwencja (%)";
+
+        rows.sort((x, y) => y.o.a + y.o.u / 1000 - (x.o.a + x.o.u / 1000));
+        $("#statList").innerHTML = rows
+          .map(({ c, o }) => {
+            const marked = o.p + o.a,
+              pct = marked ? Math.round((o.p / marked) * 100) : null;
+            const ov =
+              s.over[c.id] != null && s.over[c.id] !== "" ? s.over[c.id] : "";
+            return (
+              '<div class="stat"><div class="top">' +
+              '<div class="nm">' +
+              esc(c.name) +
+              "<small>" +
+              esc(c.type) +
+              " · " +
+              SCHEDULE.find((d) => d.d === c.day).ru +
+              "</small></div>" +
+              '<div style="text-align:right">' +
+              absBlock(o, false) +
+              "</div></div>" +
+              '<div class="bar' +
+              (pct === null ? " none" : "") +
+              '"><span style="width:' +
+              (pct === null ? 0 : pct) +
+              '%"></span></div>' +
+              '<div class="nums"><span>obecny: ' +
+              o.p +
+              " · nieobecny: " +
+              o.a +
+              (o.c ? " · odwołane: " + o.c : "") +
+              "</span><span>" +
+              (pct === null ? "brak wpisów" : pct + "% frekwencji") +
+              "</span></div>" +
+              limitLine(c, o) +
+              (o.u
+                ? '<div class="unm-box"><span>Bez wpisu: ' +
+                  o.u +
+                  '</span><button data-jump="' +
+                  o.firstU +
+                  '">Uzupełnij</button></div>'
+                : "") +
+              '<div class="over"><label for="ov-' +
+              c.id +
+              '">Własny limit:</label><input id="ov-' +
+              c.id +
+              '" type="number" min="0" inputmode="numeric" data-over="' +
+              c.id +
+              '" placeholder="domyślny" value="' +
+              esc(ov) +
+              '"><span>' +
+              (s.mode === "count" ? "nieob." : "%") +
+              "</span></div>" +
+              "</div>"
+            );
+          })
+          .join("");
+        $("#backup").value = JSON.stringify(state);
+      }
+
+      function renderAll() {
+        if (activeTab === "day") renderDay();
+        else if (activeTab === "week") renderWeek();
+        else renderStats();
+      }
+      function setTab(t) {
+        activeTab = t;
+        document
+          .querySelectorAll(".tabs button")
+          .forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === t));
+        ["day", "week", "stats"].forEach(
+          (id) => ($("#" + id).hidden = id !== t),
+        );
+        renderAll();
+      }
+
+      /* ---------- events ---------- */
+      document
+        .querySelectorAll(".tabs button")
+        .forEach((b) =>
+          b.addEventListener("click", () => setTab(b.dataset.tab)),
+        );
+      $("#date").addEventListener("change", (e) => {
+        if (e.target.value) {
+          current = e.target.value;
+          renderDay();
+        }
+      });
+      function shift(n) {
+        const d = parse(current);
+        d.setDate(d.getDate() + n);
+        current = iso(d);
+        renderDay();
+      }
+      $("#prev").addEventListener("click", () => shift(-1));
+      $("#next").addEventListener("click", () => shift(1));
+      $("#todayBtn").addEventListener("click", () => {
+        current = iso(new Date());
+        renderDay();
+      });
+
+      document.addEventListener("click", (e) => {
+        const j = e.target.closest("[data-jump]");
+        if (j) {
+          current = j.dataset.jump;
+          setTab("day");
+          window.scrollTo({ top: 0 });
+          return;
+        }
+        const b = e.target.closest("#dayList .btn");
+        if (!b) return;
+        const k = current + "|" + b.dataset.id;
+        if (state.records[k] === b.dataset.v) delete state.records[k];
+        else state.records[k] = b.dataset.v;
+        persist();
+        renderDay();
+      });
+
+      $("#setStart").addEventListener("change", (e) => {
+        if (e.target.value) {
+          state.settings.start = e.target.value;
+          persist();
+          renderStats();
+        }
+      });
+      $("#setMode").addEventListener("change", (e) => {
+        state.settings.mode = e.target.value;
+        persist();
+        renderStats();
+      });
+      $("#setVal").addEventListener("change", (e) => {
+        let v = Math.max(0, Math.round(Number(e.target.value) || 0));
+        if (state.settings.mode === "count") state.settings.count = v;
+        else state.settings.percent = Math.min(100, v);
+        persist();
+        renderStats();
+      });
+      $("#statList").addEventListener("change", (e) => {
+        const id = e.target.dataset && e.target.dataset.over;
+        if (!id) return;
+        const raw = e.target.value.trim();
+        if (raw === "") delete state.settings.over[id];
+        else
+          state.settings.over[id] = Math.max(0, Math.round(Number(raw) || 0));
+        persist();
+        renderStats();
+      });
+
+      function msg(t) {
+        $("#backupMsg").textContent = t;
+      }
+      $("#copyBtn").addEventListener("click", async () => {
+        const ta = $("#backup");
+        ta.value = JSON.stringify(state);
+        try {
+          await navigator.clipboard.writeText(ta.value);
+          msg("Skopiowano.");
+        } catch (e) {
+          ta.select();
+          msg("Zaznacz tekst i skopiuj ręcznie.");
+        }
+      });
+      $("#importBtn").addEventListener("click", () => {
+        try {
+          const obj = JSON.parse($("#backup").value);
+          if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw 0;
+          if (obj.records && typeof obj.records === "object") {
+            state = {
+              records: obj.records,
+              settings: freshSettings(obj.settings),
+            };
+          } else {
+            state = { records: obj, settings: state.settings };
+          }
+          persist();
+          renderStats();
+          msg("Dane wczytane.");
+        } catch (e) {
+          msg("Nie udało się odczytać kodu. Wklej go w całości.");
+        }
+      });
+      $("#resetBtn").addEventListener("click", () => {
+        if (!confirm("Usunąć wszystkie wpisy? Tego nie można cofnąć.")) return;
+        state.records = {};
+        persist();
+        renderStats();
+        msg("Wszystkie wpisy usunięte.");
+      });
+
+      renderDay();
+      initCloud();
+    </script>
+  </body>
+</html>
